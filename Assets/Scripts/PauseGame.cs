@@ -10,7 +10,9 @@ public class PauseGame : MonoBehaviour
     void Awake()
     {
         isPaused = false;
-        actions.FindActionMap("Player").FindAction("PauseGame").performed += OnPauseGame;
+        PlayerInputActions playerInputActions = new PlayerInputActions();
+        playerInputActions.Player.PauseGame.performed += OnPauseGame;
+        playerInputActions.Player.Enable();
         PAUSE_EVENT.Resume += BackButtonWasPressed;
     }
 
