@@ -55,7 +55,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Crouch"",
+                    ""name"": ""Crawing"",
                     ""type"": ""Button"",
                     ""id"": ""29c1b0d0-54b9-47e2-8544-b295882eaf29"",
                     ""expectedControlType"": ""Button"",
@@ -97,9 +97,31 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
+                    ""name"": ""up"",
+                    ""id"": ""cf3817cc-6467-4443-8ab1-89835a08bca9"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Player"",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
                     ""name"": ""right"",
                     ""id"": ""ae89d919-1878-42c2-8eb0-2574c07dd999"",
                     ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Player"",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""dc24ecb6-f1ee-4239-bbd0-b38f3509cf89"",
+                    ""path"": ""<Keyboard>/s"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Player"",
@@ -125,7 +147,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Player"",
-                    ""action"": ""Crouch"",
+                    ""action"": ""Crawing"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -167,7 +189,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Clime = m_Player.FindAction("Clime", throwIfNotFound: true);
-        m_Player_Crouch = m_Player.FindAction("Crouch", throwIfNotFound: true);
+        m_Player_Crawing = m_Player.FindAction("Crawing", throwIfNotFound: true);
         m_Player_PauseGame = m_Player.FindAction("PauseGame", throwIfNotFound: true);
     }
 
@@ -233,7 +255,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Look;
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_Clime;
-    private readonly InputAction m_Player_Crouch;
+    private readonly InputAction m_Player_Crawing;
     private readonly InputAction m_Player_PauseGame;
     public struct PlayerActions
     {
@@ -242,7 +264,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Look => m_Wrapper.m_Player_Look;
         public InputAction @Move => m_Wrapper.m_Player_Move;
         public InputAction @Clime => m_Wrapper.m_Player_Clime;
-        public InputAction @Crouch => m_Wrapper.m_Player_Crouch;
+        public InputAction @Crawing => m_Wrapper.m_Player_Crawing;
         public InputAction @PauseGame => m_Wrapper.m_Player_PauseGame;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
@@ -262,9 +284,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Clime.started += instance.OnClime;
             @Clime.performed += instance.OnClime;
             @Clime.canceled += instance.OnClime;
-            @Crouch.started += instance.OnCrouch;
-            @Crouch.performed += instance.OnCrouch;
-            @Crouch.canceled += instance.OnCrouch;
+            @Crawing.started += instance.OnCrawing;
+            @Crawing.performed += instance.OnCrawing;
+            @Crawing.canceled += instance.OnCrawing;
             @PauseGame.started += instance.OnPauseGame;
             @PauseGame.performed += instance.OnPauseGame;
             @PauseGame.canceled += instance.OnPauseGame;
@@ -281,9 +303,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Clime.started -= instance.OnClime;
             @Clime.performed -= instance.OnClime;
             @Clime.canceled -= instance.OnClime;
-            @Crouch.started -= instance.OnCrouch;
-            @Crouch.performed -= instance.OnCrouch;
-            @Crouch.canceled -= instance.OnCrouch;
+            @Crawing.started -= instance.OnCrawing;
+            @Crawing.performed -= instance.OnCrawing;
+            @Crawing.canceled -= instance.OnCrawing;
             @PauseGame.started -= instance.OnPauseGame;
             @PauseGame.performed -= instance.OnPauseGame;
             @PauseGame.canceled -= instance.OnPauseGame;
@@ -318,7 +340,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnLook(InputAction.CallbackContext context);
         void OnMove(InputAction.CallbackContext context);
         void OnClime(InputAction.CallbackContext context);
-        void OnCrouch(InputAction.CallbackContext context);
+        void OnCrawing(InputAction.CallbackContext context);
         void OnPauseGame(InputAction.CallbackContext context);
     }
 }

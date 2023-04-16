@@ -15,10 +15,6 @@ public class LookAround : MonoBehaviour
         playerInputActions.Player.Look.performed += LookAt;
         playerInputActions.Player.Enable();
     }
-    private void PlayerInput_onActionTriggered(InputAction.CallbackContext obj)
-    {
-        Debug.Log(obj);
-    } 
 
     public void LookAt(InputAction.CallbackContext context)
     {

@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Crouch",
+                    "name": "Crawing",
                     "type": "Button",
                     "id": "29c1b0d0-54b9-47e2-8544-b295882eaf29",
                     "expectedControlType": "Button",
@@ -75,9 +75,31 @@
                     "isPartOfComposite": true
                 },
                 {
+                    "name": "up",
+                    "id": "cf3817cc-6467-4443-8ab1-89835a08bca9",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Player",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
                     "name": "right",
                     "id": "ae89d919-1878-42c2-8eb0-2574c07dd999",
                     "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Player",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "dc24ecb6-f1ee-4239-bbd0-b38f3509cf89",
+                    "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
                     "groups": "Player",
@@ -103,7 +125,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Player",
-                    "action": "Crouch",
+                    "action": "Crawing",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
