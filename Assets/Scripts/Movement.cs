@@ -37,10 +37,12 @@ public class Movement : MonoBehaviour
 
     private void OnCrouch(InputAction.CallbackContext obj)
     {
+        animate.SetBool("crawling", true);
     }
 
     private void StopCrouch(InputAction.CallbackContext obj)
     {
+        animate.SetBool("crawling", false);
     }
 
    private void OnTriggerEnter2D(Collider2D other)
@@ -52,8 +54,10 @@ public class Movement : MonoBehaviour
     {
         wall = null;
         climing = false;
-        animate.SetBool("isClimbing", false);
+        animate.SetBool("climeing", false);
         Debug.Log("stop climbing");
+
+        rb.gravityScale = 10;
     }
 
     private void OnClimb(InputAction.CallbackContext obj)
@@ -61,16 +65,18 @@ public class Movement : MonoBehaviour
         if(wall != null)
         {
             Debug.Log("climbing");
+            rb.gravityScale = 1;
             climing= true;
-            animate.SetBool("isClimbing", true);
+            animate.SetBool("climeing", true);
             
         }
     }
     private void StopClimb(InputAction.CallbackContext obj)
     {
         climing = false;
-        animate.SetBool("isClimbing", false);
+        animate.SetBool("climeing", false);
         Debug.Log("stop climbing");
+        rb.gravityScale = 10;
     }
     private void OnLook(InputAction.CallbackContext obj)
     { 
@@ -105,6 +111,7 @@ public class Movement : MonoBehaviour
     private void StopMoving(InputAction.CallbackContext obj)
     {
         moveInput = Vector2.zero;
+        animate.SetBool("walking", false);
     }
 
     private void OnDestroy()
@@ -116,6 +123,7 @@ public class Movement : MonoBehaviour
     void OnMove(InputAction.CallbackContext contex)
     {
         moveInput = contex.ReadValue<Vector2>();
+        animate.SetBool("walking", true);
     }
 
     void FixedUpdate()

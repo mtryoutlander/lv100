@@ -20,7 +20,7 @@ public class LookAround : MonoBehaviour
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(context.ReadValue<Vector2>());
         float angle = Vector2.Angle(flashlight.transform.up, mousePos);
-        flashlight.transform.Rotate(flashlight.transform.forward.normalized * roationSpeed, angle);
+        flashlight.transform.Rotate(flashlight.transform.forward.normalized * roationSpeed *Time.deltaTime, angle);
 
 
     }
