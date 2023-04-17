@@ -9,8 +9,9 @@ jobs:
  buildWebGL:
    name: Build for WebGL 🖥️
    runs-on: ubuntu-latest
-   strategy:
-     fail-fast: false
+   concurrency: 
+      group: unity-build
+      cancel-in-progress: true
    steps:
      - name: Checkout code
        uses: actions/checkout@v3
@@ -72,7 +73,7 @@ jobs:
          branch: itch-io
          folder: build/WebGL
          
-     - uses: manleydev/butler-publish-itchio-action@master
+     - uses: josephbmanley/butler-publish-itchio-action@master
        env:
          BUTLER_CREDENTIALS: ${{ secrets.ITCH_IO_API_KEY }}
          CHANNEL: html5
