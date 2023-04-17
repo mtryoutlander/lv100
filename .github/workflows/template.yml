@@ -75,8 +75,9 @@ jobs:
      - uses: manleydev/butler-publish-itchio-action@master
        env:
          BUTLER_CREDENTIALS: ${{ secrets.ITCH_IO_API_KEY }}
-         CHANNEL: HTML
+         CHANNEL: html5
          ITCH_GAME: Rat-Escape_lv99
          ITCH_USER: emberstorm
          BRANCH: itch-io
          PACKAGE: build/WebGL
+         
