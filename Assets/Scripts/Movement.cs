@@ -7,8 +7,9 @@ using UnityEngine.TextCore.Text;
 
 public class Movement : MonoBehaviour
 {
-    public float speed = 5f;
-    public float maxSpeed = 5f;
+    public float speed, climeSpeed, crawlSpeed;
+    public float fallSpeed=5 ;
+    
     public bool isPaused { get; set; }
     private Animator animate;
 
@@ -16,7 +17,8 @@ public class Movement : MonoBehaviour
     private Vector2 velocity;
     private Rigidbody2D rb;
     private Vector2 moveInput;
-    private bool climing = false;
+    enum actionState { clime, crawl, walk, idle};
+    actionState state = actionState.walk; 
 
     private void Awake()
     {
@@ -35,15 +37,7 @@ public class Movement : MonoBehaviour
         playerInputActions.Player.Enable();
     }
 
-    private void OnCrouch(InputAction.CallbackContext obj)
-    {
-        animate.SetBool("crawling", true);
-    }
-
-    private void StopCrouch(InputAction.CallbackContext obj)
-    {
-        animate.SetBool("crawling", false);
-    }
+   
 
    private void OnTriggerEnter2D(Collider2D other)
     {
@@ -53,37 +47,79 @@ public class Movement : MonoBehaviour
     private void OnTriggerExit2D(Collider2D other)
     {
         wall = null;
-        climing = false;
-        animate.SetBool("climeing", false);
+        state = actionState.walk;
+        animate.SetBool("Climeing", false);
         Debug.Log("stop climbing");
 
-        rb.gravityScale = 10;
+        rb.gravityScale = fallSpeed;
+    }
+
+    private void OnDestroy()
+    {
+        PAUSE_EVENT.Pause -= Pause;
+        PAUSE_EVENT.Pause -= Resume;
+    }
+    void FixedUpdate()
+    {
+        if (isPaused)
+            return;
+        switch (state)
+        {
+            case actionState.clime:
+                Vector2 fliped = new Vector2(moveInput.y, moveInput.x);
+                rb.MovePosition(rb.position+fliped  * climeSpeed* Time.deltaTime);
+                animate.SetFloat("ClimeSpeed", moveInput.magnitude);
+                break;
+            
+            case actionState.crawl:
+                rb.MovePosition(rb.position + moveInput * crawlSpeed * Time.deltaTime);
+                animate.SetFloat("CrawlSpeed", moveInput.magnitude);
+                break;
+            case actionState.walk:
+                rb.MovePosition(rb.position + moveInput * speed * Time.deltaTime);
+                animate.SetFloat("WalkingSpeed", moveInput.magnitude);
+                break;
+            case actionState.idle:
+                break;
+        }
+            
+    }
+    private void OnCrouch(InputAction.CallbackContext obj)
+    {
+        state= actionState.crawl;
+        animate.SetBool("Crawling", true);
+    }
+
+    private void StopCrouch(InputAction.CallbackContext obj)
+    {
+        state = actionState.walk;
+        animate.SetFloat("CrawlSpeed", 0f);
+
+        animate.SetBool("Crawling", false);
     }
 
     private void OnClimb(InputAction.CallbackContext obj)
     {
         if(wall != null)
         {
-            Debug.Log("climbing");
-            rb.gravityScale = 1;
-            climing= true;
-            animate.SetBool("climeing", true);
-            
+            rb.gravityScale = 0;
+            state = actionState.clime;
+            animate.SetBool("Climeing", true);
+
         }
     }
     private void StopClimb(InputAction.CallbackContext obj)
     {
-        climing = false;
-        animate.SetBool("climeing", false);
-        Debug.Log("stop climbing");
-        rb.gravityScale = 10;
+        state = actionState.walk;
+        animate.SetFloat("ClimeSpeed", 0f);
+        animate.SetBool("Climeing", false);
+        rb.gravityScale = fallSpeed;
     }
     private void OnLook(InputAction.CallbackContext obj)
     { 
         //check if the obj.readvalue vector2 is left or right of the player
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(obj.ReadValue<Vector2>());
         Vector2 dif = mousePos - transform.position;
-        //Debug.Log("mouse pos x "+mousePos.x +" , player position x " + transform.position.x + ",  the dif " + dif.x);
         if (dif.x > 0)
             FaceRight();
         else
@@ -103,54 +139,35 @@ public class Movement : MonoBehaviour
         if (transform.rotation.y != 180)
         {
             transform.SetLocalPositionAndRotation(transform.position,
-                new Quaternion(transform.rotation.x, 1,transform.rotation.z,0));
+                new Quaternion(transform.rotation.x, 1, transform.rotation.z,0));
         }
 
     }
 
+    void OnMove(InputAction.CallbackContext obj)
+    {
+        moveInput = obj.ReadValue<Vector2>();
+    }
     private void StopMoving(InputAction.CallbackContext obj)
     {
-        moveInput = Vector2.zero;
-        animate.SetBool("walking", false);
-    }
-
-    private void OnDestroy()
-    {
-        PAUSE_EVENT.Pause -= Pause;
-        PAUSE_EVENT.Pause -= Resume;
-    }
-
-    void OnMove(InputAction.CallbackContext contex)
-    {
-        moveInput = contex.ReadValue<Vector2>();
-        animate.SetBool("walking", true);
-    }
-
-    void FixedUpdate()
-    {
-        if (isPaused)
-            return;
-        if (climing)
-            rb.MovePosition(new Vector2(rb.position.x, rb.position.y + moveInput.y * speed * Time.fixedDeltaTime));
-        else
-            rb.MovePosition(new Vector2( rb.position.x + moveInput.x *speed *Time.fixedDeltaTime, rb.position.y));
-        
+        moveInput = Vector2.zero; ;
+        animate.SetFloat("WalkingSpeed", 0f);
     }
 
     public void Pause()
     {
-        Debug.Log("Pause");
         isPaused = true;
         velocity = rb.velocity;
         rb.velocity = Vector2.zero;
+        rb.gravityScale = 0;
 
     }
 
     public void Resume()
     {
-        Debug.Log("resume");
         isPaused = false;
         rb.velocity = velocity;
+        rb.gravityScale = fallSpeed;
     }
 
     
