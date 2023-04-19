@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ed34a1f2dbfdb847b963a8e1cafb53e, type: 3}
   m_Name: Rope
   m_EditorClassIdentifier: 
-  prefab: {fileID: 0}
-  type: 0
+  prefab: {fileID: 3855384180515894244, guid: 4195863d7fce6c84fb58cffe79121599, type: 3}
+  type: 1
   description: 

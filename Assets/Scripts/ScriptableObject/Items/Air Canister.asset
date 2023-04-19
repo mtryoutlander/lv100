@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e2ca2c15edf8c84785212565c260a9a, type: 3}
   m_Name: Air Canister
   m_EditorClassIdentifier: 
-  prefab: {fileID: 0}
+  prefab: {fileID: 4974805876916201011, guid: 2083014373218534eb186a38b1c482a3, type: 3}
   type: 0
   description: 
-  restoreAirValue: 0
+  restoreAirValue: 25
