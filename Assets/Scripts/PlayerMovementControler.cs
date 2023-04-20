@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.TextCore.Text;
 
-public class Movement : MonoBehaviour
+public class PlayerMovemetnControler : MonoBehaviour
 {
     public float speed, climeSpeed, crawlSpeed;
     public float fallSpeed=5 ;
