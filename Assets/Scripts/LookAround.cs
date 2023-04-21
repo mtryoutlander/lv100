@@ -25,7 +25,6 @@ public class LookAround : MonoBehaviour
     {
         Vector3 mousePos =  Camera.main.ScreenToWorldPoint(context.ReadValue<Vector2>());
         mousePos -= head.transform.position;
-        Debug.Log(mousePos);
         if(mousePos.x > 0)
             leftOrRight= true;
         else

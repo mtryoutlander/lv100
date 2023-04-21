@@ -17,9 +17,10 @@ public class PlayerMovementControler : MonoBehaviour
     private Vector2 velocity;
     private Rigidbody2D rb;
     private Vector2 moveInput;
-    enum actionState { clime, crawl, walk, idle};
-    actionState state = actionState.walk; 
-
+    private GameObject topOfWall;
+    enum actionState { clime, crawl, walk, idle, topOfClime, stop};
+    actionState state = actionState.walk;
+    private IEnumerator coroutine;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -35,14 +36,23 @@ public class PlayerMovementControler : MonoBehaviour
         playerInputActions.Player.Crawing.performed += OnCrouch;
         playerInputActions.Player.Crawing.canceled += StopCrouch;    
         playerInputActions.Player.Enable();
+        coroutine = AnimatieWait();
     }
 
    
 
    private void OnTriggerEnter2D(Collider2D other)
     {
-        wall = other.gameObject;
-        Debug.Log(wall);
+        if(other.tag == "ClimeAble")
+            wall = other.gameObject;
+        if (other.tag == "TopOfWall")
+        {
+            topOfWall = other.gameObject;
+            animate.SetTrigger("TopOfWall");
+            state = actionState.topOfClime;
+            StartCoroutine(coroutine);
+        }
+            Debug.Log(wall);
     }
     private void OnTriggerExit2D(Collider2D other)
     {
@@ -76,10 +86,15 @@ public class PlayerMovementControler : MonoBehaviour
                 animate.SetFloat("CrawlSpeed", moveInput.magnitude);
                 break;
             case actionState.walk:
+            case actionState.idle:
                 rb.MovePosition(rb.position + moveInput * speed * Time.deltaTime);
                 animate.SetFloat("WalkingSpeed", moveInput.magnitude);
                 break;
-            case actionState.idle:
+            case actionState.topOfClime:
+                //move the tranform to topOfWall position smoothly
+                transform.position = Vector2.Lerp(transform.position, topOfWall.transform.position, 0.1f);
+                //transform.position = (topOfWall.transform.position);
+                Debug.Log("moved to "+ topOfWall.transform.position);
                 break;
         }
             
@@ -92,10 +107,11 @@ public class PlayerMovementControler : MonoBehaviour
 
     private void StopCrouch(InputAction.CallbackContext obj)
     {
-        state = actionState.walk;
+        state = actionState.stop;
         animate.SetFloat("CrawlSpeed", 0f);
-
         animate.SetBool("Crawling", false);
+        StartCoroutine(AnimatieWait());
+
     }
 
     private void OnClimb(InputAction.CallbackContext obj)
@@ -169,6 +185,10 @@ public class PlayerMovementControler : MonoBehaviour
         rb.velocity = velocity;
         rb.gravityScale = fallSpeed;
     }
-
-    
+    //make a corutien method that changes the state to idle after animate time
+    IEnumerator AnimatieWait()
+    {
+        yield return new WaitForSeconds(animate.GetCurrentAnimatorStateInfo(0).length +1);
+        state = actionState.idle;
+    }
 }
