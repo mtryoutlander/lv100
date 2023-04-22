@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TreeEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.TextCore.Text;
@@ -9,18 +10,18 @@ public class PlayerMovementControler : MonoBehaviour
 {
     public float speed, climeSpeed, crawlSpeed;
     public float fallSpeed=5 ;
-    
-    public bool isPaused { get; set; }
-    private Animator animate;
+    [HideInInspector]public bool isPaused { get; set; }
+    [HideInInspector]public bool topLedge, bottomLedge, wall;
 
-    private GameObject wall;
-    private Vector2 velocity;
+
+    private Animator animate;
+    private Vector2 velocity, moveInput;
     private Rigidbody2D rb;
-    private Vector2 moveInput;
-    private GameObject topOfWall;
+    
     enum actionState { clime, crawl, walk, idle, topOfClime, stop};
     actionState state = actionState.walk;
     private IEnumerator coroutine;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -32,38 +33,12 @@ public class PlayerMovementControler : MonoBehaviour
         playerInputActions.Player.Move.canceled += StopMoving;
         playerInputActions.Player.Look.performed += OnLook;
         playerInputActions.Player.Clime.performed += OnClimb;
-        playerInputActions.Player.Clime.canceled += StopClimb;
+        playerInputActions.Player.Clime.canceled += StopClime;
         playerInputActions.Player.Crawing.performed += OnCrouch;
         playerInputActions.Player.Crawing.canceled += StopCrouch;    
         playerInputActions.Player.Enable();
         coroutine = AnimatieWait();
     }
-
-   
-
-   private void OnTriggerEnter2D(Collider2D other)
-    {
-        if(other.tag == "ClimeAble")
-            wall = other.gameObject;
-        if (other.tag == "TopOfWall")
-        {
-            topOfWall = other.gameObject;
-            animate.SetTrigger("TopOfWall");
-            state = actionState.topOfClime;
-            StartCoroutine(coroutine);
-        }
-            Debug.Log(wall);
-    }
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        wall = null;
-        state = actionState.walk;
-        animate.SetBool("Climeing", false);
-        Debug.Log("stop climbing");
-
-        rb.gravityScale = fallSpeed;
-    }
-
     private void OnDestroy()
     {
         PAUSE_EVENT.Pause -= Pause;
@@ -71,8 +46,12 @@ public class PlayerMovementControler : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (isPaused)
+        if (isPaused)  // if game is paused
             return;
+        // if player trying walk off ledge
+        if (bottomLedge && new Vector3(moveInput.normalized.x, moveInput.normalized.y) == transform.right.normalized)  
+            return;
+        //diffrent kinds of movement
         switch (state)
         {
             case actionState.clime:
@@ -86,18 +65,33 @@ public class PlayerMovementControler : MonoBehaviour
                 animate.SetFloat("CrawlSpeed", moveInput.magnitude);
                 break;
             case actionState.walk:
-            case actionState.idle:
-                rb.MovePosition(rb.position + moveInput * speed * Time.deltaTime);
+            case actionState.idle:                rb.MovePosition(rb.position + moveInput * speed * Time.deltaTime);
                 animate.SetFloat("WalkingSpeed", moveInput.magnitude);
-                break;
-            case actionState.topOfClime:
-                //move the tranform to topOfWall position smoothly
-                transform.position = Vector2.Lerp(transform.position, topOfWall.transform.position, 0.1f);
-                //transform.position = (topOfWall.transform.position);
-                Debug.Log("moved to "+ topOfWall.transform.position);
                 break;
         }
             
+    }
+
+
+    private void Update()
+    {
+
+        if(state == actionState.clime)
+        {
+            //if player is at top of wall clime up 
+            if (topLedge)
+            {
+                Vector3 dir = transform.right + (transform.up * 2.5f);
+                transform.position = transform.position + dir;
+                state = actionState.walk;
+                animate.SetFloat("ClimeSpeed", 0f);
+                animate.SetBool("Climeing", false);
+                animate.SetTrigger("ClimeUp");
+                rb.gravityScale = fallSpeed;
+                StartCoroutine(AnimatieWait());
+            }
+
+        }
     }
     private void OnCrouch(InputAction.CallbackContext obj)
     {
@@ -110,22 +104,37 @@ public class PlayerMovementControler : MonoBehaviour
         state = actionState.stop;
         animate.SetFloat("CrawlSpeed", 0f);
         animate.SetBool("Crawling", false);
-        StartCoroutine(AnimatieWait());
+
+        rb.gravityScale = fallSpeed;
 
     }
 
     private void OnClimb(InputAction.CallbackContext obj)
     {
-        if(wall != null)
+        if (bottomLedge)  ///clime down
+        {
+            Vector3 dir = (transform.right *1.3f) + (-transform.up * 2.8f);
+            transform.position = transform.position + dir;
+            rb.gravityScale = 0;
+            if (dir.x > 0)
+                FaceLeft();
+            else
+                FaceRight();
+            animate.SetTrigger("ClimeDown");
+            animate.SetBool("Climeing", true);
+            state = actionState.clime;
+        }
+        else if (wall) //clime up
         {
             rb.gravityScale = 0;
             state = actionState.clime;
             animate.SetBool("Climeing", true);
-
         }
+        
     }
-    private void StopClimb(InputAction.CallbackContext obj)
+    private void StopClime(InputAction.CallbackContext obj)
     {
+        Debug.Log("STOP Climeing");
         state = actionState.walk;
         animate.SetFloat("ClimeSpeed", 0f);
         animate.SetBool("Climeing", false);
@@ -133,6 +142,8 @@ public class PlayerMovementControler : MonoBehaviour
     }
     private void OnLook(InputAction.CallbackContext obj)
     { 
+        if(state == actionState.clime || state == actionState.topOfClime)
+            return;
         //check if the obj.readvalue vector2 is left or right of the player
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(obj.ReadValue<Vector2>());
         Vector2 dif = mousePos - transform.position;
@@ -185,10 +196,11 @@ public class PlayerMovementControler : MonoBehaviour
         rb.velocity = velocity;
         rb.gravityScale = fallSpeed;
     }
-    //make a corutien method that changes the state to idle after animate time
+    //call this function when you want to wait for the animation to finish
+    //startcoroutine(AnimatieWait());
     IEnumerator AnimatieWait()
     {
-        yield return new WaitForSeconds(animate.GetCurrentAnimatorStateInfo(0).length +1);
+        yield return new WaitForSeconds(animate.GetCurrentAnimatorStateInfo(0).length);
         state = actionState.idle;
     }
 }
