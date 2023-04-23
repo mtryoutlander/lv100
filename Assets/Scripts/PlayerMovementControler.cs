@@ -12,14 +12,16 @@ public class PlayerMovementControler : MonoBehaviour
     public float fallSpeed=5, damageEnemy = 10;
     public OxgenCounter oxgenCounter;
     [HideInInspector]public bool isPaused { get; set; }
-    [HideInInspector]public bool topLedge, bottomLedge, wall;
+    [HideInInspector]public bool topLedge, bottomLedge, wall, ground;
 
-
+    private float timeFell = 0;
+    [SerializeField]private float timePlayerCanFall = 3;
+    [SerializeField]private float timeDamageMultiplyer = 10;
     private Animator animate;
-    private Vector2 velocity, moveInput;
+    private Vector2 velocity, moveVerticalInput, moveHorizontalInput;   // make vertical and horizontal input = the input 
     private Rigidbody2D rb;
     
-    enum actionState { clime, crawl, walk, idle, topOfClime, stop, run};
+    enum actionState { clime, crawl, walk, idle, topOfClime, run, falling, stop};
     actionState state = actionState.walk;
     private IEnumerator coroutine;
 
@@ -30,8 +32,10 @@ public class PlayerMovementControler : MonoBehaviour
         PAUSE_EVENT.Pause += Pause;
         PAUSE_EVENT.Resume += Resume;
         PlayerInputActions playerInputActions = new PlayerInputActions();
-        playerInputActions.Player.Move.performed += OnMove;
-        playerInputActions.Player.Move.canceled += StopMoving;
+        playerInputActions.Player.MoveVertical.performed += OnMoveVertical;
+        playerInputActions.Player.MoveVertical.canceled += StopMoving;
+        playerInputActions.Player.MoveHorizontal.performed += OnMoveHorizontal;
+        playerInputActions.Player.MoveHorizontal.canceled += StopMoving;
         playerInputActions.Player.Look.performed += OnLook;
         playerInputActions.Player.Clime.performed += OnClimb;
         playerInputActions.Player.Clime.canceled += StopClime;
@@ -42,13 +46,21 @@ public class PlayerMovementControler : MonoBehaviour
         playerInputActions.Player.Enable();
         coroutine = AnimatieWait();
     }
+
+  
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "Enemy")
-            TakeDamage();
-        Debug.Log("collision Enter");
+            TakeDamage(damageEnemy);
+        Debug.Log("collisionEnter Time Fell" + timeFell);
+        if (timeFell > timePlayerCanFall)
+        {
+            TakeDamage(timeFell*timeDamageMultiplyer);
+            timeFell = 0;
+        }
     }
-    
+
     private void OnDestroy()
     {
         PAUSE_EVENT.Pause -= Pause;
@@ -56,50 +68,59 @@ public class PlayerMovementControler : MonoBehaviour
     }
     void FixedUpdate()
     {
+        
         if (isPaused)  // if game is paused
             return;
         // if player trying walk off ledge
-        if (bottomLedge && new Vector3(moveInput.normalized.x, moveInput.normalized.y) == transform.right.normalized)  
+        Debug.Log(moveVerticalInput);
+        if (bottomLedge && new Vector3(moveHorizontalInput.normalized.x, moveHorizontalInput.normalized.y) == transform.right 
+            || (bottomLedge && moveVerticalInput.normalized.y == -1) )
             return;
         //diffrent kinds of movement
         switch (state)
         {
             case actionState.clime:
                 oxgenCounter.oxgenLossRate = 1;
-                Vector2 fliped = new Vector2(moveInput.y, moveInput.x);
-                rb.MovePosition(rb.position+fliped  * climeSpeed* Time.deltaTime);
-                animate.SetFloat("ClimeSpeed", moveInput.magnitude);
-                animate.SetFloat("Speed", moveInput.magnitude);
+                rb.MovePosition(rb.position+ moveVerticalInput * climeSpeed* Time.deltaTime);
+                animate.SetFloat("ClimeSpeed", moveVerticalInput.magnitude);
+                animate.SetFloat("Speed", moveVerticalInput.magnitude);
                 break;
             
             case actionState.crawl:
                 oxgenCounter.oxgenLossRate = 1;
-                rb.MovePosition(rb.position + moveInput * crawlSpeed * Time.deltaTime);
-                animate.SetFloat("CrawlSpeed", moveInput.magnitude);
-                animate.SetFloat("Speed", moveInput.magnitude);
+                rb.MovePosition(rb.position + moveHorizontalInput * crawlSpeed * Time.deltaTime);
+                animate.SetFloat("CrawlSpeed", moveHorizontalInput.magnitude);
+                animate.SetFloat("Speed", moveHorizontalInput.magnitude);
                 break;
             case actionState.walk:
             case actionState.idle:
                 oxgenCounter.oxgenLossRate = 1;
-                rb.MovePosition(rb.position + moveInput * speed * Time.deltaTime);
-                animate.SetFloat("WalkingSpeed", moveInput.magnitude);
-                animate.SetFloat("Speed", moveInput.magnitude);
+                rb.MovePosition(rb.position + moveHorizontalInput * speed * Time.deltaTime);
+                animate.SetFloat("WalkingSpeed", moveHorizontalInput.magnitude);
+                animate.SetFloat("Speed", moveHorizontalInput.magnitude);
                 break;
             case actionState.run:
                 oxgenCounter.oxgenLossRate = 3;
-                rb.MovePosition(rb.position + moveInput * (speed*2) * Time.deltaTime);
-                animate.SetFloat("WalkingSpeed", moveInput.magnitude*2);
-                animate.SetFloat("Speed", moveInput.magnitude);
+                rb.MovePosition(rb.position + moveHorizontalInput * (speed*2) * Time.deltaTime);
+                animate.SetFloat("WalkingSpeed", moveHorizontalInput.magnitude*2);
+                animate.SetFloat("Speed", moveHorizontalInput.magnitude);
+                break;
+            case actionState.falling:
+                
                 break;
         }
             
     }
 
-
     private void Update()
     {
-
-        if(state == actionState.clime)
+        if (!ground)
+            state = actionState.falling;
+        else
+            timeFell = 0;
+        if (state == actionState.falling)
+            timeFell += Time.deltaTime;
+        if (state == actionState.clime)
         {
             //if player is at top of wall clime up 
             if (topLedge)
@@ -116,6 +137,15 @@ public class PlayerMovementControler : MonoBehaviour
 
         }
     }
+    private void OnMoveHorizontal(InputAction.CallbackContext obj)
+    {
+        moveHorizontalInput = obj.ReadValue<Vector2>();
+    }
+
+    private void OnMoveVertical(InputAction.CallbackContext obj)
+    {
+        moveVerticalInput = obj.ReadValue<Vector2>();
+    }
 
     private void AddOxgen(int amount)
     {
@@ -123,9 +153,9 @@ public class PlayerMovementControler : MonoBehaviour
     }
 
     
-    private void TakeDamage()
+    private void TakeDamage(float amount)
     {
-        oxgenCounter.oxgen -= damageEnemy;
+        oxgenCounter.oxgen -= amount;
     }
     
 
@@ -217,15 +247,13 @@ public class PlayerMovementControler : MonoBehaviour
         state = actionState.run;
     }
 
-    void OnMove(InputAction.CallbackContext obj)
-    {
-        moveInput = obj.ReadValue<Vector2>();
-    }
+
     private void StopMoving(InputAction.CallbackContext obj)
     {
-        moveInput = Vector2.zero; ;
-        animate.SetFloat("WalkingSpeed", moveInput.magnitude);
-        animate.SetFloat("Speed", moveInput.magnitude);
+        moveVerticalInput = Vector2.zero; 
+        moveHorizontalInput = Vector2.zero;
+        animate.SetFloat("WalkingSpeed", moveVerticalInput.magnitude);
+        animate.SetFloat("Speed", moveVerticalInput.magnitude);
     }
 
     public void Pause()

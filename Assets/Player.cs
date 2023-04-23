@@ -37,7 +37,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""Move"",
+                    ""name"": ""MoveHorizontal"",
                     ""type"": ""Value"",
                     ""id"": ""84631f09-b14b-4520-aa67-b09777c07c1e"",
                     ""expectedControlType"": ""Vector2"",
@@ -80,6 +80,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MoveVertical"",
+                    ""type"": ""Value"",
+                    ""id"": ""8e6ab501-762c-4212-ab25-52a6d0f8838a"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -90,7 +99,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Move"",
+                    ""action"": ""MoveHorizontal"",
                     ""isComposite"": true,
                     ""isPartOfComposite"": false
                 },
@@ -101,18 +110,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Player"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""right"",
-                    ""id"": ""cf3817cc-6467-4443-8ab1-89835a08bca9"",
-                    ""path"": ""<Keyboard>/w"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Player"",
-                    ""action"": ""Move"",
+                    ""action"": ""MoveHorizontal"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 },
@@ -123,18 +121,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Player"",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""left"",
-                    ""id"": ""dc24ecb6-f1ee-4239-bbd0-b38f3509cf89"",
-                    ""path"": ""<Keyboard>/s"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Player"",
-                    ""action"": ""Move"",
+                    ""action"": ""MoveHorizontal"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 },
@@ -192,6 +179,39 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Sprint"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""a10c622c-385c-46d8-8263-388deb1a2098"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MoveVertical"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""addce217-ee6a-4308-b41e-184c2b7cc9af"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Player"",
+                    ""action"": ""MoveVertical"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""36322d36-ff06-412e-b3fb-7cb72ef46ae6"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Player"",
+                    ""action"": ""MoveVertical"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -207,11 +227,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
-        m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
+        m_Player_MoveHorizontal = m_Player.FindAction("MoveHorizontal", throwIfNotFound: true);
         m_Player_Clime = m_Player.FindAction("Clime", throwIfNotFound: true);
         m_Player_Crawing = m_Player.FindAction("Crawing", throwIfNotFound: true);
         m_Player_PauseGame = m_Player.FindAction("PauseGame", throwIfNotFound: true);
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
+        m_Player_MoveVertical = m_Player.FindAction("MoveVertical", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -274,21 +295,23 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Look;
-    private readonly InputAction m_Player_Move;
+    private readonly InputAction m_Player_MoveHorizontal;
     private readonly InputAction m_Player_Clime;
     private readonly InputAction m_Player_Crawing;
     private readonly InputAction m_Player_PauseGame;
     private readonly InputAction m_Player_Sprint;
+    private readonly InputAction m_Player_MoveVertical;
     public struct PlayerActions
     {
         private @PlayerInputActions m_Wrapper;
         public PlayerActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @Look => m_Wrapper.m_Player_Look;
-        public InputAction @Move => m_Wrapper.m_Player_Move;
+        public InputAction @MoveHorizontal => m_Wrapper.m_Player_MoveHorizontal;
         public InputAction @Clime => m_Wrapper.m_Player_Clime;
         public InputAction @Crawing => m_Wrapper.m_Player_Crawing;
         public InputAction @PauseGame => m_Wrapper.m_Player_PauseGame;
         public InputAction @Sprint => m_Wrapper.m_Player_Sprint;
+        public InputAction @MoveVertical => m_Wrapper.m_Player_MoveVertical;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -301,9 +324,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Look.started += instance.OnLook;
             @Look.performed += instance.OnLook;
             @Look.canceled += instance.OnLook;
-            @Move.started += instance.OnMove;
-            @Move.performed += instance.OnMove;
-            @Move.canceled += instance.OnMove;
+            @MoveHorizontal.started += instance.OnMoveHorizontal;
+            @MoveHorizontal.performed += instance.OnMoveHorizontal;
+            @MoveHorizontal.canceled += instance.OnMoveHorizontal;
             @Clime.started += instance.OnClime;
             @Clime.performed += instance.OnClime;
             @Clime.canceled += instance.OnClime;
@@ -316,6 +339,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Sprint.started += instance.OnSprint;
             @Sprint.performed += instance.OnSprint;
             @Sprint.canceled += instance.OnSprint;
+            @MoveVertical.started += instance.OnMoveVertical;
+            @MoveVertical.performed += instance.OnMoveVertical;
+            @MoveVertical.canceled += instance.OnMoveVertical;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -323,9 +349,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Look.started -= instance.OnLook;
             @Look.performed -= instance.OnLook;
             @Look.canceled -= instance.OnLook;
-            @Move.started -= instance.OnMove;
-            @Move.performed -= instance.OnMove;
-            @Move.canceled -= instance.OnMove;
+            @MoveHorizontal.started -= instance.OnMoveHorizontal;
+            @MoveHorizontal.performed -= instance.OnMoveHorizontal;
+            @MoveHorizontal.canceled -= instance.OnMoveHorizontal;
             @Clime.started -= instance.OnClime;
             @Clime.performed -= instance.OnClime;
             @Clime.canceled -= instance.OnClime;
@@ -338,6 +364,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Sprint.started -= instance.OnSprint;
             @Sprint.performed -= instance.OnSprint;
             @Sprint.canceled -= instance.OnSprint;
+            @MoveVertical.started -= instance.OnMoveVertical;
+            @MoveVertical.performed -= instance.OnMoveVertical;
+            @MoveVertical.canceled -= instance.OnMoveVertical;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -367,10 +396,11 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     public interface IPlayerActions
     {
         void OnLook(InputAction.CallbackContext context);
-        void OnMove(InputAction.CallbackContext context);
+        void OnMoveHorizontal(InputAction.CallbackContext context);
         void OnClime(InputAction.CallbackContext context);
         void OnCrawing(InputAction.CallbackContext context);
         void OnPauseGame(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
+        void OnMoveVertical(InputAction.CallbackContext context);
     }
 }
