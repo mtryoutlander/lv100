@@ -22,7 +22,7 @@ public class PlayerMovementControler : MonoBehaviour
     private Rigidbody2D rb;
     
     enum actionState { clime, crawl, walk, idle, topOfClime, run, falling, stop};
-    actionState state = actionState.walk;
+    actionState state = actionState.idle;
     private IEnumerator coroutine;
 
     private void Awake()
@@ -56,9 +56,10 @@ public class PlayerMovementControler : MonoBehaviour
         Debug.Log("collisionEnter Time Fell" + timeFell);
         if (timeFell > timePlayerCanFall)
         {
+            state = actionState.idle;
             TakeDamage(timeFell*timeDamageMultiplyer);
-            timeFell = 0;
         }
+        timeFell= 0;
     }
 
     private void OnDestroy()
@@ -68,11 +69,15 @@ public class PlayerMovementControler : MonoBehaviour
     }
     void FixedUpdate()
     {
-        
+        if (!ground && state != actionState.clime)
+        {
+            state = actionState.falling;
+            Debug.Log("Started falling");
+        }else
+            timeFell =0;
+
         if (isPaused)  // if game is paused
             return;
-        // if player trying walk off ledge
-        Debug.Log(moveVerticalInput);
         if (bottomLedge && new Vector3(moveHorizontalInput.normalized.x, moveHorizontalInput.normalized.y) == transform.right 
             || (bottomLedge && moveVerticalInput.normalized.y == -1) )
             return;
@@ -114,18 +119,17 @@ public class PlayerMovementControler : MonoBehaviour
 
     private void Update()
     {
-        if (!ground)
-            state = actionState.falling;
-        else
-            timeFell = 0;
+        
         if (state == actionState.falling)
+        {
             timeFell += Time.deltaTime;
+        }
         if (state == actionState.clime)
         {
             //if player is at top of wall clime up 
             if (topLedge)
             {
-                Vector3 dir = transform.right + (transform.up * 2.5f);
+                Vector3 dir = (transform.right * 2.5f ) + (transform.up * 5f);
                 transform.position = transform.position + dir;
                 state = actionState.walk;
                 animate.SetFloat("ClimeSpeed", 0f);
@@ -179,7 +183,7 @@ public class PlayerMovementControler : MonoBehaviour
     {
         if (bottomLedge)  ///clime down
         {
-            Vector3 dir = (transform.right *1.3f) + (-transform.up * 2.8f);
+            Vector3 dir = (transform.right *3f) + (-transform.up * 4.5f);
             transform.position = transform.position + dir;
             rb.gravityScale = 0;
             if (dir.x > 0)
