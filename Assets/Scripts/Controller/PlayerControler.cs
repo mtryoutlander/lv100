@@ -7,11 +7,11 @@ public class PlayerControler : MonoBehaviour
 {
     //get input from new input system
     private PlayerInput input;
-    private Movement movement;
+    private PlayerMovementControler movement;
     private void Awake()
     {
         input = GetComponent<PlayerInput>();
-        movement = GetComponent<Movement>();
+        movement = GetComponent<PlayerMovementControler>();
     }
 
     private void Update()
