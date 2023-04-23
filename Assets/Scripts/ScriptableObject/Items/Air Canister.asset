@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e2ca2c15edf8c84785212565c260a9a, type: 3}
+  m_Name: Air Canister
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 4974805876916201011, guid: 2083014373218534eb186a38b1c482a3, type: 3}
+  type: 0
+  description: 
+  restoreAirValue: 25
