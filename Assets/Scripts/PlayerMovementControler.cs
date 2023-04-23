@@ -9,7 +9,8 @@ using UnityEngine.TextCore.Text;
 public class PlayerMovementControler : MonoBehaviour
 {
     public float speed, climeSpeed, crawlSpeed;
-    public float fallSpeed=5 ;
+    public float fallSpeed=5, damageEnemy = 10;
+    public OxgenCounter oxgenCounter;
     [HideInInspector]public bool isPaused { get; set; }
     [HideInInspector]public bool topLedge, bottomLedge, wall;
 
@@ -18,7 +19,7 @@ public class PlayerMovementControler : MonoBehaviour
     private Vector2 velocity, moveInput;
     private Rigidbody2D rb;
     
-    enum actionState { clime, crawl, walk, idle, topOfClime, stop};
+    enum actionState { clime, crawl, walk, idle, topOfClime, stop, run};
     actionState state = actionState.walk;
     private IEnumerator coroutine;
 
@@ -35,10 +36,19 @@ public class PlayerMovementControler : MonoBehaviour
         playerInputActions.Player.Clime.performed += OnClimb;
         playerInputActions.Player.Clime.canceled += StopClime;
         playerInputActions.Player.Crawing.performed += OnCrouch;
-        playerInputActions.Player.Crawing.canceled += StopCrouch;    
+        playerInputActions.Player.Crawing.canceled += StopCrouch;
+        playerInputActions.Player.Sprint.performed += OnSprint;
+        playerInputActions.Player.Sprint.canceled += StopSprint;
         playerInputActions.Player.Enable();
         coroutine = AnimatieWait();
     }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Enemy")
+            TakeDamage();
+        Debug.Log("collision Enter");
+    }
+    
     private void OnDestroy()
     {
         PAUSE_EVENT.Pause -= Pause;
@@ -55,6 +65,7 @@ public class PlayerMovementControler : MonoBehaviour
         switch (state)
         {
             case actionState.clime:
+                oxgenCounter.oxgenLossRate = 1;
                 Vector2 fliped = new Vector2(moveInput.y, moveInput.x);
                 rb.MovePosition(rb.position+fliped  * climeSpeed* Time.deltaTime);
                 animate.SetFloat("ClimeSpeed", moveInput.magnitude);
@@ -62,14 +73,22 @@ public class PlayerMovementControler : MonoBehaviour
                 break;
             
             case actionState.crawl:
+                oxgenCounter.oxgenLossRate = 1;
                 rb.MovePosition(rb.position + moveInput * crawlSpeed * Time.deltaTime);
                 animate.SetFloat("CrawlSpeed", moveInput.magnitude);
                 animate.SetFloat("Speed", moveInput.magnitude);
                 break;
             case actionState.walk:
-            case actionState.idle:                
+            case actionState.idle:
+                oxgenCounter.oxgenLossRate = 1;
                 rb.MovePosition(rb.position + moveInput * speed * Time.deltaTime);
                 animate.SetFloat("WalkingSpeed", moveInput.magnitude);
+                animate.SetFloat("Speed", moveInput.magnitude);
+                break;
+            case actionState.run:
+                oxgenCounter.oxgenLossRate = 3;
+                rb.MovePosition(rb.position + moveInput * (speed*2) * Time.deltaTime);
+                animate.SetFloat("WalkingSpeed", moveInput.magnitude*2);
                 animate.SetFloat("Speed", moveInput.magnitude);
                 break;
         }
@@ -97,6 +116,19 @@ public class PlayerMovementControler : MonoBehaviour
 
         }
     }
+
+    private void AddOxgen(int amount)
+    {
+        oxgenCounter.oxgen += amount;
+    }
+
+    
+    private void TakeDamage()
+    {
+        oxgenCounter.oxgen -= damageEnemy;
+    }
+    
+
     private void OnCrouch(InputAction.CallbackContext obj)
     {
         state= actionState.crawl;
@@ -173,6 +205,16 @@ public class PlayerMovementControler : MonoBehaviour
                 new Quaternion(transform.rotation.x, 1, transform.rotation.z,0));
         }
 
+    }
+
+    private void StopSprint(InputAction.CallbackContext obj)
+    {
+        state = actionState.walk;
+    }
+
+    private void OnSprint(InputAction.CallbackContext obj)
+    {
+        state = actionState.run;
     }
 
     void OnMove(InputAction.CallbackContext obj)

@@ -7,7 +7,6 @@ public class FootSteps : MonoBehaviour
     public AudioSource footSteps;
     public AudioClip[] footStepSounds;
     public GameObject charitor;
-    private float footStepSpeed = 0.5f;
     private void Update()
     {
         if (charitor.GetComponent<Animator>().GetFloat("Speed") > 0.1f)
@@ -16,7 +15,6 @@ public class FootSteps : MonoBehaviour
             {
                 footSteps.clip = footStepSounds[Random.Range(0, footStepSounds.Length)];
                 footSteps.Play();
-                Invoke("PlayFootStep", footStepSpeed);
             }
         }
         else
