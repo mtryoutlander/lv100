@@ -58,15 +58,19 @@ public class PlayerMovementControler : MonoBehaviour
                 Vector2 fliped = new Vector2(moveInput.y, moveInput.x);
                 rb.MovePosition(rb.position+fliped  * climeSpeed* Time.deltaTime);
                 animate.SetFloat("ClimeSpeed", moveInput.magnitude);
+                animate.SetFloat("Speed", moveInput.magnitude);
                 break;
             
             case actionState.crawl:
                 rb.MovePosition(rb.position + moveInput * crawlSpeed * Time.deltaTime);
                 animate.SetFloat("CrawlSpeed", moveInput.magnitude);
+                animate.SetFloat("Speed", moveInput.magnitude);
                 break;
             case actionState.walk:
-            case actionState.idle:                rb.MovePosition(rb.position + moveInput * speed * Time.deltaTime);
+            case actionState.idle:                
+                rb.MovePosition(rb.position + moveInput * speed * Time.deltaTime);
                 animate.SetFloat("WalkingSpeed", moveInput.magnitude);
+                animate.SetFloat("Speed", moveInput.magnitude);
                 break;
         }
             
@@ -178,7 +182,8 @@ public class PlayerMovementControler : MonoBehaviour
     private void StopMoving(InputAction.CallbackContext obj)
     {
         moveInput = Vector2.zero; ;
-        animate.SetFloat("WalkingSpeed", 0f);
+        animate.SetFloat("WalkingSpeed", moveInput.magnitude);
+        animate.SetFloat("Speed", moveInput.magnitude);
     }
 
     public void Pause()
